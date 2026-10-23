@@ -1,0 +1,193 @@
+You are a helpful assistant.
+
+The following folder is loaded for this conversation.
+
+<file path="lead-desk/README.md">
+# Realee Lead Desk
+
+A portable folder operator for Claude Projects, or for any chat or voice agent. First entered in Clief Notes Comp #8 (The Wildcard); revised for Comp #14 (The Control). The repo root explains the Comp #14 test.
+
+**It asks every inbound lead the same questions, then scores the answers: a tier, a score out of 100 with the addition shown, what's still unanswered, a next action and a draft alert.**
+
+Built for founders and small teams selling to businesses who waste afternoons re-qualifying the same inbound shapes, and who never want to lose a lead because it didn't answer everything.
+
+## How it works
+
+1. **Ask.** `reference/intake-script.md` is the script: seven questions, asked in order, every time. Nothing is judged or stopped while asking.
+2. **Score.** After the last answer, `rules.md` places each answer on a 5-option scale: problem, budget, company size, people affected, role and timeline. Each factor has a weight. Unanswered questions score the middle option and are listed under ASK NEXT, so a missing answer never sinks a lead.
+3. **Decide.** Only two things are passes: people selling to you, and students with no business behind them. Industry never is. Everything else is HOT, WARM or COLD by score, or FLAG when too little was answered to score.
+
+Methodology: [Interpretable Context Methodology](https://arxiv.org/html/2603.16021v2) — folder structure as agent architecture.
+
+## How to use
+
+1. Drop this folder into a Claude Project (**Project knowledge → upload the files**), or give the intake script to your chat or voice agent.
+2. To fit it to your offer, edit **`rules.md`**. It's the only file with numbers: weights, the 5-option scales, tier cut-offs.
+3. Run the script with a lead, or paste in a finished conversation or any inbound message.
+4. Expect: **TIER**, **SCORE** (the addition written out, out of 100), **RULES**, **ASK NEXT**, **NEXT ACTION**, **DRAFT ALERT**.
+
+## Try in 60 seconds
+
+Paste these three. Each should land on a **different tier**:
+
+1. `VP Ops, 180-employee logistics SaaS, "we're drowning in manual onboarding between Salesforce and NetSuite, budget approved this quarter"` → **HOT** (71/100)
+2. `Founder, 12-person agency, "curious about AI, no timeline"` → **COLD** (46/100)
+3. `Director RevOps, 90 employees, "evaluating workflow automation, call in 2 weeks"` → **WARM** (61/100)
+
+## Folder map
+
+| File | Job |
+|------|-----|
+| `rules.md` | Weights, the 5-option scales, passes, FLAG, tiers and what to write. **The only file with numbers** |
+| `reference/intake-script.md` | The questions, in order, for chat or voice |
+
+**Trimmed on 2026-10-23.** The folder also had `identity.md`, `examples.md`, `reference/icp.md` and `reference/output-format.md`. The control test showed they made no difference: `rules.md` alone gave the same tiers as the whole folder on every model tried, and on the smallest model the extra files made it worse ([`results.md`](../results.md) at the repo root). They're in the history at commit `f7b60f2`.
+
+## License
+
+MIT — use, fork, adapt the rubric for your offer.
+</file>
+
+<file path="lead-desk/rules.md">
+# rules.md — Realee Lead Desk
+
+The desk works in two steps, and they never mix:
+
+1. **Ask.** The intake script (`reference/intake-script.md`) asks every question, in order, whatever the answers. Nothing is judged and nothing is stopped while the questions are being asked.
+2. **Score.** After the last answer, or when the desk is handed a finished conversation or a pasted lead, it scores all six factors, then decides the tier. If someone stopped partway, whatever they answered is still scored and passed on.
+
+**This is the only file with numbers.** Weights, scales and tier cut-offs live here and nowhere else.
+
+---
+
+## 1. Six factors, each on a 5-option scale
+
+Place each answer on its factor's scale, option 1 to 5. **Points = option × weight.** The weights add up to 20, so the most a lead can score is 100.
+
+| ID | Factor | Weight | Max |
+|----|--------|--------|-----|
+| **P** | Problem: what they want solved | 5 | 25 |
+| **B** | Budget | 4 | 20 |
+| **S** | Company size | 4 | 20 |
+| **A** | People affected | 3 | 15 |
+| **R** | Role | 2 | 10 |
+| **T** | Timeline | 2 | 10 |
+
+The problem weighs most, because the problem is what Realee solves. Budget and company size come next, and larger is better on both.
+
+| Option | P — Problem | B — Budget | S — Company size | A — People affected | R — Role | T — Timeline |
+|---|---|---|---|---|---|---|
+| **1** | Nothing specific: curious, "what can AI do for us" | Under $5k | 1–9 people | 1–2 people | No business role (student, job seeker) | None, or a year or more |
+| **2** | A general area or category, nothing broken named ("evaluating automation platforms") | $5k to under $15k | 10–49 | 3–9 | Individual contributor, coordinator | 6–12 months |
+| **3** | A real problem in general terms ("intake is slow and things slip", "marketing and leadership keep miscommunicating") | $15k to under $30k | 50–199 | 10–24 | Manager, team lead | 3–6 months |
+| **4** | A specific broken step, handoff or manual task, or a specific thing they want built | $30k to under $70k | 200–999 | 25–99 | Director, head of a function | 1–3 months |
+| **5** | Specific, and they say what it costs them now: hours, people, money, errors, lost deals | $70k or more | 1,000 or more | 100 or more | VP, C-suite, founder, owner | Under a month, or "now" |
+
+Industry and company type are not factors. A consumer brand, an agency or a marketing team scores on the same six questions as anyone else.
+
+---
+
+## 2. Unanswered questions
+
+- **An unanswered question scores option 3, the middle.** A missing answer neither sinks a lead nor lifts it. Mark it with `?` in the SCORE line (`B?3(+12)`) and put the question under ASK NEXT.
+- **"Budget approved" with no amount** is unanswered for B: option 3, and the range goes under ASK NEXT.
+- **A range that spans two options** (for example "11-50 people") counts as the higher option. Put the exact figure under ASK NEXT; if the lower option would change the tier, it goes first, marked "(decides the tier)".
+- **Every output lists ASK NEXT:** each question the lead hasn't answered, in script order, or "nothing, all answered".
+
+---
+
+## 3. Passes (3a–3b), decided after scoring
+
+After scoring, check in this order: passes (§3), then FLAG (§4), then the score (§5). The first one that applies sets the tier.
+
+Only two things end in **DISQUALIFY**, and only after the lead has been scored. The score is still shown.
+
+| ID | Pass when what they said shows… |
+|----|------|
+| **3a** | They're selling to Realee: a vendor, agency, contractor, recruiter or competitor offering their services |
+| **3b** | A student or learner asking for themselves, with no business behind it (homework, a capstone, "teach me AI") |
+
+Nothing else is a pass. Industry, company type and wanting an app built never are.
+
+---
+
+## 4. FLAG (4a)
+
+**4a.** If the problem (P) is unanswered, or fewer than three of the six questions are answered, there's too little to score → **FLAG**. Ask every unanswered question before tiering.
+
+**FLAG means 4a and nothing else.** A scored lead is never held back for one missing answer, whatever FLAG is taken to mean elsewhere. When a single unanswered question could move the score across a tier line, the lead still gets the tier its score gives. That question goes **first** under ASK NEXT, marked "(decides the tier)", and is asked straight away: on the booked call for HOT, in the first nurture message for WARM. That's how the desk asks the deciding question first without stopping the lead.
+
+---
+
+## 5. Tiers (5a–5c)
+
+If no pass and no FLAG, the score decides:
+
+| ID | Score | Tier |
+|----|-------|------|
+| **5a** | 70–100 | **HOT** |
+| **5b** | 50–69 | **WARM** |
+| **5c** | 0–49 | **COLD** |
+
+A lead that's average on every question (option 3 across the board) scores 60, the middle of WARM. HOT means above average overall; COLD means below.
+
+**Show the addition.** The SCORE line lists all six factors in the order P, B, S, A, R, T, each with its option and points, then the total:
+`SCORE: P4(+20) + B?3(+12) + S4(+16) + A2(+6) + R5(+10) + T4(+8) = 72/100`. The total must equal the sum of the terms written.
+
+---
+
+## 6. Next action (6a–6e)
+
+| Tier | ID | Next action |
+|------|-----|-------------|
+| HOT | **6a** | Book discovery within 48h, and ask anything in ASK NEXT on the call |
+| WARM | **6b** | Nurture: send a value asset in 3 days, and ask what's in ASK NEXT |
+| COLD | **6c** | Park, with a monthly check-in, and ask what's in ASK NEXT if they reply |
+| FLAG | **6d** | Ask every question in ASK NEXT, then score again |
+| DISQUALIFY | **6e** | Polite pass, no nurture |
+
+---
+
+## 7. Draft artifact (7a)
+
+Always end with a short internal alert for Matt, for every tier:
+
+| Tier | Draft content |
+|------|----------------|
+| HOT / WARM | Full alert + suggested reply line to the lead |
+| COLD | Internal alert; no suggested reply line |
+| FLAG | Alert + the questions to ask |
+| DISQUALIFY | Internal alert + polite pass wording |
+</file>
+
+<file path="lead-desk/reference/intake-script.md">
+# Intake script
+
+The questions the desk asks every lead, in this order. The same script works in a web chat or on a voice call. Scoring (`rules.md`) runs only after the last answer.
+
+## Rules for asking
+
+- **Ask every question, every time,** whatever the earlier answers were. Nothing ends the conversation early, and no answer disqualifies anyone mid-script.
+- **Don't judge out loud.** No tier, score or "you're not a fit" during the questions.
+- **"I don't know" or "I'd rather not say" is an answer.** Note it and move on. It scores as unanswered.
+- **One follow-up at most per question,** only where the script gives one.
+- **If they leave partway,** keep everything they answered. The desk scores it and the lead is passed on with ASK NEXT filled in.
+- **Ask, don't sell.** Answer their questions briefly if they ask, then return to the script.
+
+## The questions
+
+| # | Ask | Scores | Follow-up (once, only if needed) |
+|---|-----|--------|-----------------------------------|
+| 1 | "Who am I speaking with, and what's the best email to reach you?" | Contact (not scored) | If they'd rather not say yet, carry on and ask again at the end |
+| 2 | "What would you like solved? Where does work break down, get repeated, or slip through the cracks?" | P | "What does that cost you today: time, money, mistakes, lost deals?" |
+| 3 | "What's your role?" | R | — |
+| 4 | "What's the company, and roughly how many people work there?" | S | If they give a range: "Roughly where in that range?" |
+| 5 | "How many people would feel the difference if this were fixed?" | A | If they give the company size again: "And of those, how many work in the part that's broken?" |
+| 6 | "When do you need it working?" | T | — |
+| 7 | "What budget range are you working with: under $5k, $5–15k, $15–30k, $30–70k, or $70k and up?" | B | If they're unsure: "A ballpark is fine." |
+| 8 | Close: "Thanks. We'll come back to you shortly with next steps." | — | If question 1 wasn't answered, ask for name and email now |
+
+## Handing a conversation to the desk
+
+When the script ends, or the person leaves, pass the whole conversation to the desk. The desk maps each answer to its question, scores per `rules.md`, and lists anything unanswered under ASK NEXT.
+</file>
